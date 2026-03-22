@@ -9,12 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { subscribeToMeds, getTodayMeds, logDose } from '@/lib/medicationService';
+import { requestNotificationPermission } from '@/lib/notificationService';
 
 const Index = () => {
   const navigate = useNavigate();
   const [todayMeds, setTodayMeds] = useState(getTodayMeds());
 
   useEffect(() => {
+    // Request notification permissions on first load
+    requestNotificationPermission();
+
     const unsubscribe = subscribeToMeds((updatedMeds) => {
       setTodayMeds(updatedMeds);
     });
