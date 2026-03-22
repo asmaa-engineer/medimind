@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import Navigation from '@/components/Navigation';
+import InstallPrompt from '@/components/InstallPrompt';
 import { Pill, CheckCircle2, Clock, Plus, Sparkles, Bell, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -41,7 +42,7 @@ const Index = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-sm"
+            className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-sm h-12 w-12"
             onClick={() => navigate('/notifications')}
           >
             <Bell size={24} className="text-gray-600 dark:text-gray-400" />
@@ -71,7 +72,7 @@ const Index = () => {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <GlassCard 
-            className="p-4 flex items-center gap-3 bg-white dark:bg-gray-900 border-none shadow-sm cursor-pointer"
+            className="p-4 flex items-center gap-3 bg-white dark:bg-gray-900 border-none shadow-sm cursor-pointer min-h-[80px]"
             onClick={() => navigate('/history')}
           >
             <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-xl">
@@ -83,7 +84,7 @@ const Index = () => {
             </div>
           </GlassCard>
           <GlassCard 
-            className="p-4 flex items-center gap-3 bg-white dark:bg-gray-900 border-none shadow-sm cursor-pointer"
+            className="p-4 flex items-center gap-3 bg-white dark:bg-gray-900 border-none shadow-sm cursor-pointer min-h-[80px]"
             onClick={() => navigate('/remaining')}
           >
             <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-xl">
@@ -98,7 +99,7 @@ const Index = () => {
 
         {/* AI Insight Card */}
         <GlassCard 
-          className="mb-8 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30 p-4 flex items-center gap-4 cursor-pointer"
+          className="mb-8 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30 p-4 flex items-center gap-4 cursor-pointer min-h-[80px]"
           onClick={() => navigate('/chat')}
         >
           <div className="bg-indigo-600 p-3 rounded-2xl text-white">
@@ -116,7 +117,7 @@ const Index = () => {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Today's Schedule</h2>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl"
+              className="text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl h-12"
               onClick={() => navigate('/medications')}
             >
               View All
@@ -127,7 +128,7 @@ const Index = () => {
             {todayMeds.map((med) => (
               <GlassCard 
                 key={med.id} 
-                className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border-none shadow-sm hover:scale-[1.02] transition-transform cursor-pointer"
+                className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border-none shadow-sm hover:scale-[1.02] transition-transform cursor-pointer min-h-[80px]"
                 onClick={() => navigate(`/medications/${med.id}`)}
               >
                 <div className="flex items-center gap-4">
@@ -149,7 +150,7 @@ const Index = () => {
                 ) : (
                   <Button 
                     size="sm" 
-                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-6 font-bold shadow-md shadow-blue-100 dark:shadow-none"
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-6 font-bold shadow-md shadow-blue-100 dark:shadow-none h-12"
                     onClick={(e) => {
                       e.stopPropagation();
                       logDose(med.id);
@@ -166,11 +167,12 @@ const Index = () => {
         {/* FAB */}
         <Button 
           onClick={() => navigate('/camera')}
-          className="fixed bottom-24 right-6 w-16 h-16 rounded-[24px] shadow-2xl bg-blue-600 hover:bg-blue-700 flex items-center justify-center p-0 border-4 border-white dark:border-gray-900"
+          className="fixed bottom-24 right-6 w-16 h-16 rounded-[24px] shadow-2xl bg-blue-600 hover:bg-blue-700 flex items-center justify-center p-0 border-4 border-white dark:border-gray-900 z-50"
         >
           <Plus size={32} className="text-white" />
         </Button>
       </div>
+      <InstallPrompt />
       <Navigation />
     </div>
   );
