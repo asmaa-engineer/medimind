@@ -18,6 +18,8 @@ import Refills from "./pages/Refills";
 import MedicationDetail from "./pages/MedicationDetail";
 import MissedDoses from "./pages/MissedDoses";
 import Remaining from "./pages/Remaining";
+import Settings from "./pages/Settings";
+import ChatFAB from "./components/ChatFAB";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,7 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/camera" element={<Camera />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/insights" element={<Insights />} />
@@ -44,6 +47,7 @@ const App = () => (
           <Route path="/remaining" element={<Remaining />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ChatFAB />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
