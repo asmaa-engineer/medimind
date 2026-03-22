@@ -1,1 +1,2 @@
-# Welcome to your Dyad app
+# Welcome to your medimind
+AI-Powered Medication Reminder App - React + Supabase + PWA
