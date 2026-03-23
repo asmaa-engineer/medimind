@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import Navigation from '@/components/Navigation';
 import InstallPrompt from '@/components/InstallPrompt';
-import { Pill, CheckCircle2, Clock, Plus, Sparkles, Bell, TrendingUp, User } from 'lucide-react';
+import { Pill, CheckCircle2, Clock, Plus, Sparkles, Bell, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -35,10 +35,26 @@ const Index = () => {
     };
     fetchData();
 
-    const unsubscribe = subscribeToMeds((updatedMeds) => {
+    // Real-time subscription for profile changes
+    const channel = supabase
+      .channel('home_profile_changes')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'user_profiles' 
+      }, (payload) => {
+        setProfile(payload.new);
+      })
+      .subscribe();
+
+    const unsubscribeMeds = subscribeToMeds((updatedMeds) => {
       setTodayMeds(updatedMeds);
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeMeds();
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const takenCount = todayMeds.filter(m => m.status === 'taken').length;

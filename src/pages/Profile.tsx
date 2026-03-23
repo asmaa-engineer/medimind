@@ -1,11 +1,21 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import GlassCard from '@/components/GlassCard';
-import { User, Settings as SettingsIcon, LogOut, ChevronRight, Camera, Phone, BellRing, ShieldCheck, Loader2, Trash2 } from 'lucide-react';
+import { 
+  Settings as SettingsIcon, 
+  LogOut, 
+  ChevronRight, 
+  Camera, 
+  BellRing, 
+  ShieldCheck, 
+  Loader2, 
+  Trash2,
+  Upload
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { notifyDoseReminder, requestNotificationPermission } from '@/lib/notificationService';
@@ -21,7 +31,7 @@ const Profile = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -36,6 +46,22 @@ const Profile = () => {
       }
     };
     fetchData();
+
+    // Real-time subscription for this specific profile
+    const channel = supabase
+      .channel('profile_page_changes')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'user_profiles' 
+      }, (payload) => {
+        setProfile(payload.new);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -60,8 +86,8 @@ const Profile = () => {
     setIsUploading(true);
     try {
       const publicUrl = await uploadAvatar(user.id, file);
-      setProfile({ ...profile, avatar_url: publicUrl });
       showSuccess("Profile picture updated!");
+      // Profile state will update via real-time subscription
     } catch (error: any) {
       showError(error.message || "Failed to upload image");
     } finally {
@@ -79,7 +105,6 @@ const Profile = () => {
         .eq('user_id', user.id);
       
       if (error) throw error;
-      setProfile({ ...profile, avatar_url: null });
       showSuccess("Profile picture removed");
     } catch (error: any) {
       showError(error.message);
@@ -106,18 +131,21 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-background pb-32">
       <div className="max-w-md mx-auto px-6 pt-12">
         <header className="flex flex-col items-center mb-8">
-          <div className="relative mb-4 group">
-            <Avatar className="w-24 h-24 border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden">
-              <AvatarImage src={profile?.avatar_url} className="object-cover" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xl font-bold">
-                {initials}
-              </AvatarFallback>
+          <div className="relative mb-6 group">
+            <div className="relative">
+              <Avatar className="w-28 h-28 border-4 border-white dark:border-gray-800 shadow-2xl overflow-hidden">
+                <AvatarImage src={profile?.avatar_url} className="object-cover" />
+                <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               {isUploading && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <Loader2 className="text-white animate-spin" size={24} />
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-full flex items-center justify-center z-10">
+                  <Loader2 className="text-white animate-spin" size={32} />
                 </div>
               )}
-            </Avatar>
+            </div>
+            
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -125,30 +153,46 @@ const Profile = () => {
               accept="image/*" 
               onChange={handleFileChange}
             />
+            
             <Button 
               size="icon" 
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="absolute bottom-0 right-0 rounded-full bg-blue-600 hover:bg-blue-700 border-2 border-white dark:border-gray-800 w-8 h-8 shadow-lg"
+              className="absolute bottom-1 right-1 rounded-full bg-blue-600 hover:bg-blue-700 border-4 border-white dark:border-gray-800 w-10 h-10 shadow-lg z-20"
             >
-              <Camera size={14} />
+              <Camera size={18} />
             </Button>
           </div>
           
-          <div className="text-center">
+          <div className="text-center space-y-1">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {profile?.full_name || 'Alex Johnson'}
             </h2>
-            <p className="text-gray-500">{user?.email || 'alex.j@example.com'}</p>
+            <p className="text-gray-500 text-sm">{user?.email || 'alex.j@example.com'}</p>
             
-            {profile?.avatar_url && (
-              <button 
-                onClick={handleRemoveAvatar}
-                className="text-xs text-red-500 mt-2 font-medium hover:underline flex items-center justify-center gap-1 mx-auto"
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="rounded-xl h-9 px-4 border-gray-200 dark:border-gray-800"
               >
-                <Trash2 size={12} /> Remove Photo
-              </button>
-            )}
+                <Upload size={14} className="mr-2" /> Change Photo
+              </Button>
+              
+              {profile?.avatar_url && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleRemoveAvatar}
+                  disabled={isUploading}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl h-9 px-4"
+                >
+                  <Trash2 size={14} className="mr-2" /> Remove
+                </Button>
+              )}
+            </div>
           </div>
         </header>
 
