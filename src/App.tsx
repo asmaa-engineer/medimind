@@ -20,6 +20,7 @@ import MissedDoses from "./pages/MissedDoses";
 import Remaining from "./pages/Remaining";
 import Settings from "./pages/Settings";
 import AddMedication from "./pages/AddMedication";
+import Login from "./pages/Login";
 import ChatFAB from "./components/ChatFAB";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
       <Sonner position="top-center" />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/splash" element={<Splash />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/" element={<Index />} />
