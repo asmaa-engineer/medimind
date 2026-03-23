@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import Navigation from '@/components/Navigation';
 import InstallPrompt from '@/components/InstallPrompt';
-import { Pill, CheckCircle2, Clock, Plus, Sparkles, Bell, TrendingUp } from 'lucide-react';
+import { Pill, CheckCircle2, Clock, Plus, Sparkles, Bell, TrendingUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -22,41 +22,46 @@ const Index = () => {
   useEffect(() => {
     const fetchData = async () => {
       console.log("[Home] Fetching data...");
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        // Fetch Profile
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        setProfile(profileData);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Fetch Profile
+          const { data: profileData } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          setProfile(profileData);
 
-        // Fetch Today's Doses
-        const today = new Date().toISOString().split('T')[0];
-        const { data: dosesData, error: dosesError } = await supabase
-          .from('doses')
-          .select(`
-            *,
-            medications (
-              name,
-              dosage
-            )
-          `)
-          .eq('user_id', user.id)
-          .gte('scheduled_time', `${today}T00:00:00`)
-          .lte('scheduled_time', `${today}T23:59:59`)
-          .order('scheduled_time', { ascending: true });
+          // Fetch Today's Doses
+          const today = new Date().toISOString().split('T')[0];
+          const { data: dosesData, error: dosesError } = await supabase
+            .from('doses')
+            .select(`
+              *,
+              medications (
+                name,
+                dosage
+              )
+            `)
+            .eq('user_id', user.id)
+            .gte('scheduled_time', `${today}T00:00:00`)
+            .lte('scheduled_time', `${today}T23:59:59`)
+            .order('scheduled_time', { ascending: true });
 
-        if (dosesError) {
-          console.error("[Home] Doses fetch error:", dosesError);
-        } else {
-          console.log("[Home] Doses loaded:", dosesData);
-          setTodayMeds(dosesData || []);
+          if (dosesError) {
+            console.error("[Home] Doses fetch error:", dosesError);
+          } else {
+            console.log("[Home] Doses loaded:", dosesData);
+            setTodayMeds(dosesData || []);
+          }
         }
+      } catch (err) {
+        console.error("[Home] Unexpected error:", err);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     fetchData();
 
@@ -116,6 +121,7 @@ const Index = () => {
   const totalCount = todayMeds.length;
   const adherence = totalCount > 0 ? Math.round((takenCount / totalCount) * 100) : 0;
 
+  // Safer name extraction
   const firstName = profile?.full_name?.split(' ')[0] || 'User';
 
   if (isLoading) {
