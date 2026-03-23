@@ -14,10 +14,17 @@ import {
   ShieldCheck, 
   Loader2, 
   Trash2,
-  Upload
+  Upload,
+  MoreVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { notifyDoseReminder, requestNotificationPermission } from '@/lib/notificationService';
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from "@/integrations/supabase/client";
@@ -87,7 +94,6 @@ const Profile = () => {
     try {
       const publicUrl = await uploadAvatar(user.id, file);
       showSuccess("Profile picture updated!");
-      // Profile state will update via real-time subscription
     } catch (error: any) {
       showError(error.message || "Failed to upload image");
     } finally {
@@ -131,7 +137,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-background pb-32">
       <div className="max-w-md mx-auto px-6 pt-12">
         <header className="flex flex-col items-center mb-8">
-          <div className="relative mb-6 group">
+          <div className="relative mb-6">
             <div className="relative">
               <Avatar className="w-28 h-28 border-4 border-white dark:border-gray-800 shadow-2xl overflow-hidden">
                 <AvatarImage src={profile?.avatar_url} className="object-cover" />
@@ -154,14 +160,35 @@ const Profile = () => {
               onChange={handleFileChange}
             />
             
-            <Button 
-              size="icon" 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="absolute bottom-1 right-1 rounded-full bg-blue-600 hover:bg-blue-700 border-4 border-white dark:border-gray-800 w-10 h-10 shadow-lg z-20"
-            >
-              <Camera size={18} />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  size="icon" 
+                  disabled={isUploading}
+                  className="absolute bottom-1 right-1 rounded-full bg-blue-600 hover:bg-blue-700 border-4 border-white dark:border-gray-800 w-10 h-10 shadow-lg z-20"
+                >
+                  <Camera size={18} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-2xl p-2">
+                <DropdownMenuItem 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-xl gap-2 cursor-pointer"
+                >
+                  <Upload size={16} />
+                  Upload Photo
+                </DropdownMenuItem>
+                {profile?.avatar_url && (
+                  <DropdownMenuItem 
+                    onClick={handleRemoveAvatar}
+                    className="rounded-xl gap-2 text-red-600 focus:text-red-600 cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                    Remove Photo
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           <div className="text-center space-y-1">
@@ -170,7 +197,7 @@ const Profile = () => {
             </h2>
             <p className="text-gray-500 text-sm">{user?.email || 'alex.j@example.com'}</p>
             
-            <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="mt-4">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -180,18 +207,6 @@ const Profile = () => {
               >
                 <Upload size={14} className="mr-2" /> Change Photo
               </Button>
-              
-              {profile?.avatar_url && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleRemoveAvatar}
-                  disabled={isUploading}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl h-9 px-4"
-                >
-                  <Trash2 size={14} className="mr-2" /> Remove
-                </Button>
-              )}
             </div>
           </div>
         </header>
